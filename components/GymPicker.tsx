@@ -20,12 +20,10 @@ export type Gym = {
 export const GYM_LIST: Gym[] = [
   { id: 'sats-storo', name: 'SATS Storo', city: 'Oslo', label: 'SATS Storo – Oslo' },
   { id: 'sats-nydalen', name: 'SATS Nydalen', city: 'Oslo', label: 'SATS Nydalen – Oslo' },
-  { id: 'sats-majorstuen', name: 'SATS Majorstuen', city: 'Oslo', label: 'SATS Majorstuen – Oslo' },
-  { id: 'sats-toyen', name: 'SATS Tøyen', city: 'Oslo', label: 'SATS Tøyen – Oslo' },
+  { id: 'sats-bislett', name: 'SATS Bislett', city: 'Oslo', label: 'SATS Bislett – Oslo' },
+  { id: 'sats-schous-plass', name: 'SATS Schous Plass', city: 'Oslo', label: 'SATS Schous Plass – Oslo' },
   { id: 'sats-sentrum', name: 'SATS Sentrum', city: 'Oslo', label: 'SATS Sentrum – Oslo' },
   { id: 'sats-honefoss', name: 'SATS Hønefoss', city: 'Hønefoss', label: 'SATS Hønefoss – Hønefoss' },
-  { id: 'sporty24-grunerlokka', name: 'Sporty24 Grünerløkka', city: 'Oslo', label: 'Sporty24 Grünerløkka – Oslo' },
-  { id: 'sporty24-frogner', name: 'Sporty24 Frogner', city: 'Oslo', label: 'Sporty24 Frogner – Oslo' },
   { id: 'sporty24-honefoss', name: 'Sporty24 Hønefoss', city: 'Hønefoss', label: 'Sporty24 Hønefoss – Hønefoss' },
 ]
 

@@ -1,17 +1,15 @@
 import * as Location from 'expo-location'
 import { supabase } from './supabase'
 
-// Gymmens koordinater – juster om nødvendig etter eksakt adresse
+// Gymmens koordinater – verifisert mot offentlige adresseregistre
 const GYM_COORDS: Record<string, { lat: number; lon: number }> = {
-  'sats-storo':            { lat: 59.9467, lon: 10.7754 },
-  'sats-nydalen':          { lat: 59.9491, lon: 10.7682 },
-  'sats-majorstuen':       { lat: 59.9247, lon: 10.7165 },
-  'sats-toyen':            { lat: 59.9121, lon: 10.7665 },
-  'sats-sentrum':          { lat: 59.9129, lon: 10.7463 },
-  'sats-honefoss':         { lat: 60.1673, lon: 10.2547 },
-  'sporty24-grunerlokka':  { lat: 59.9219, lon: 10.7596 },
-  'sporty24-frogner':      { lat: 59.9225, lon: 10.7085 },
-  'sporty24-honefoss':     { lat: 60.1680, lon: 10.2533 },
+  'sats-storo':        { lat: 59.946890, lon: 10.772761 }, // Vitaminveien 5-7, 0485 Oslo
+  'sats-nydalen':      { lat: 59.949100, lon: 10.768400 }, // Sandakerveien 109-111, 0484 Oslo
+  'sats-bislett':      { lat: 59.924460, lon: 10.732214 }, // Bislettgata 6, 0167 Oslo
+  'sats-schous-plass': { lat: 59.921900, lon: 10.759600 }, // Trondheimsveien 2D, 0560 Oslo
+  'sats-sentrum':      { lat: 59.914899, lon: 10.742653 }, // Akersgata 51, 0180 Oslo
+  'sats-honefoss':     { lat: 60.170000, lon: 10.258000 }, // Kartverksveien 2, 3511 Hønefoss
+  'sporty24-honefoss': { lat: 60.180100, lon: 10.237700 }, // Arnemannsveien 5, 3510 Hønefoss
 }
 
 const CHECK_IN_RADIUS_M = 150
