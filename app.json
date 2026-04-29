@@ -14,7 +14,10 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "gymCrush bruker posisjonen din for å sjekke deg inn på treningssenteret."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -22,7 +25,11 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -30,7 +37,13 @@
     "plugins": [
       "expo-secure-store",
       "expo-router",
-      "expo-image-picker"
+      "expo-image-picker",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "gymCrush bruker posisjonen din for å sjekke deg inn på treningssenteret."
+        }
+      ]
     ]
   }
 }
