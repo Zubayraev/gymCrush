@@ -20,6 +20,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useProfile } from '../../hooks/useProfile'
 import PRCard, { PR } from '../../components/PRCard'
 import { supabase } from '../../lib/supabase'
+import GymPicker, { Gym, GYM_LIST } from '../../components/GymPicker'
 
 const PLACEHOLDER = 'https://ui-avatars.com/api/?background=FF6B6B&color=fff&size=200'
 
@@ -39,15 +40,15 @@ export default function ProfileScreen() {
   const [editName, setEditName] = useState('')
   const [editAge, setEditAge] = useState('')
   const [editBio, setEditBio] = useState('')
-  const [editGym, setEditGym] = useState('')
+  const [editSelectedGym, setEditSelectedGym] = useState<Gym | null>(null)
+  const [showEditGymPicker, setShowEditGymPicker] = useState(false)
   const [editExercise, setEditExercise] = useState('')
   const [editInstagram, setEditInstagram] = useState('')
   const [editHeight, setEditHeight] = useState('')
-  const [editCity, setEditCity] = useState('')
 
-  // Treningssenter-seksjon
-  const [gymInput, setGymInput] = useState('')
-  const [editingGym, setEditingGym] = useState(false)
+  // Treningssenter-seksjon (hurtigendre)
+  const [selectedGym, setSelectedGym] = useState<Gym | null>(null)
+  const [showGymPicker, setShowGymPicker] = useState(false)
   const [savingGym, setSavingGym] = useState(false)
 
   const loadPRs = useCallback(async () => {
@@ -72,10 +73,10 @@ export default function ProfileScreen() {
     setEditAge(profile.age ? String(profile.age) : '')
     setEditHeight(profile.height_cm ? String(profile.height_cm) : '')
     setEditBio(profile.bio ?? '')
-    setEditGym(profile.gym_name ?? '')
+    const foundGym = GYM_LIST.find((g) => g.id === profile.gym_id) ?? null
+    setEditSelectedGym(foundGym)
     setEditExercise(profile.favorite_exercise ?? '')
     setEditInstagram(profile.instagram ?? '')
-    setEditCity(profile.city ?? '')
     setEditing(true)
   }
 
@@ -90,10 +91,11 @@ export default function ProfileScreen() {
           age: editAge ? parseInt(editAge, 10) : null,
           height_cm: editHeight ? parseInt(editHeight, 10) : null,
           bio: editBio.trim(),
-          gym_name: editGym.trim(),
+          gym_name: editSelectedGym?.name ?? null,
+          gym_id: editSelectedGym?.id ?? null,
+          city: editSelectedGym?.city ?? null,
           favorite_exercise: editExercise.trim(),
           instagram: editInstagram.trim(),
-          city: editCity.trim(),
         })
         .eq('id', user.id)
 
@@ -188,22 +190,22 @@ export default function ProfileScreen() {
     }
   }
 
-  const startEditGym = () => {
-    setGymInput(profile?.gym_name ?? '')
-    setEditingGym(true)
+  const startGymPicker = () => {
+    const foundGym = GYM_LIST.find((g) => g.id === profile?.gym_id) ?? null
+    setSelectedGym(foundGym)
+    setShowGymPicker(true)
   }
 
-  const saveGym = async () => {
+  const saveGym = async (gym: Gym) => {
     if (!user) return
     try {
       setSavingGym(true)
       const { error } = await supabase
         .from('profiles')
-        .update({ gym_name: gymInput.trim() })
+        .update({ gym_name: gym.name, gym_id: gym.id, city: gym.city })
         .eq('id', user.id)
       if (error) throw error
       await refetch()
-      setEditingGym(false)
     } catch (e: any) {
       Alert.alert('Feil', e.message)
     } finally {
@@ -264,10 +266,21 @@ export default function ProfileScreen() {
                 </View>
               </View>
               <EditRow label="Bio" value={editBio} onChange={setEditBio} multiline />
-              <EditRow label="Treningssenter" value={editGym} onChange={setEditGym} />
+              <View style={{ gap: 6 }}>
+                <Text style={{ fontSize: 13, fontWeight: '600', color: '#6C6C6E' }}>Treningssenter</Text>
+                <TouchableOpacity
+                  style={gymPickerBtnStyle.btn}
+                  onPress={() => setShowEditGymPicker(true)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={editSelectedGym ? gymPickerBtnStyle.value : gymPickerBtnStyle.placeholder}>
+                    {editSelectedGym ? `🏋️ ${editSelectedGym.name}` : 'Velg treningssenter...'}
+                  </Text>
+                  <Text style={gymPickerBtnStyle.chevron}>›</Text>
+                </TouchableOpacity>
+              </View>
               <EditRow label="Favorittøvelse" value={editExercise} onChange={setEditExercise} />
               <EditRow label="Instagram" value={editInstagram} onChange={setEditInstagram} autoCapitalize="none" />
-              <EditRow label="Bosted" value={editCity} onChange={setEditCity} />
 
               <View style={styles.editActions}>
                 <TouchableOpacity
@@ -320,46 +333,21 @@ export default function ProfileScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Treningssenter</Text>
-            {!editingGym && (
-              <TouchableOpacity style={styles.addPRBtn} onPress={startEditGym}>
-                <Text style={styles.addPRText}>
-                  {profile?.gym_name ? 'Endre' : '+ Legg til'}
-                </Text>
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity style={styles.addPRBtn} onPress={startGymPicker}>
+              <Text style={styles.addPRText}>
+                {profile?.gym_name ? 'Endre' : '+ Legg til'}
+              </Text>
+            </TouchableOpacity>
           </View>
 
-          {editingGym ? (
-            <View style={styles.gymEditRow}>
-              <TextInput
-                style={styles.gymInput}
-                value={gymInput}
-                onChangeText={setGymInput}
-                placeholder="SATS, Elixia, Evo..."
-                placeholderTextColor="#AEAEB2"
-                autoFocus
-              />
-              <TouchableOpacity
-                style={styles.gymSaveBtn}
-                onPress={saveGym}
-                disabled={savingGym}
-              >
-                {savingGym
-                  ? <ActivityIndicator color="#fff" size="small" />
-                  : <Text style={styles.gymSaveBtnText}>Lagre</Text>
-                }
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.gymCancelBtn}
-                onPress={() => setEditingGym(false)}
-              >
-                <Text style={styles.gymCancelBtnText}>Avbryt</Text>
-              </TouchableOpacity>
-            </View>
+          {savingGym ? (
+            <ActivityIndicator color="#FF6B6B" style={{ alignSelf: 'flex-start', marginTop: 4 }} />
           ) : (
-            <Text style={profile?.gym_name ? styles.gymValue : styles.emptyPR}>
-              {profile?.gym_name ? `🏋️ ${profile.gym_name}` : 'Ingen treningssenter lagt til ennå'}
-            </Text>
+            <TouchableOpacity onPress={startGymPicker} activeOpacity={0.7}>
+              <Text style={profile?.gym_name ? styles.gymValue : styles.emptyPR}>
+                {profile?.gym_name ? `🏋️ ${profile.gym_name}` : 'Trykk for å velge treningssenter'}
+              </Text>
+            </TouchableOpacity>
           )}
         </View>
 
@@ -384,6 +372,22 @@ export default function ProfileScreen() {
           )}
         </View>
       </ScrollView>
+
+      {/* Gym-velger i redigering */}
+      <GymPicker
+        visible={showEditGymPicker}
+        selectedId={editSelectedGym?.id ?? null}
+        onSelect={(gym) => setEditSelectedGym(gym)}
+        onClose={() => setShowEditGymPicker(false)}
+      />
+
+      {/* Gym-velger hurtigendre */}
+      <GymPicker
+        visible={showGymPicker}
+        selectedId={selectedGym?.id ?? null}
+        onSelect={(gym) => { setSelectedGym(gym); saveGym(gym) }}
+        onClose={() => setShowGymPicker(false)}
+      />
 
       {/* Legg til PR-modal */}
       <Modal transparent visible={showAddPR} animationType="slide">
@@ -473,6 +477,21 @@ function EditRow({
     </View>
   )
 }
+
+const gymPickerBtnStyle = StyleSheet.create({
+  btn: {
+    backgroundColor: '#F2F2F7',
+    borderRadius: 10,
+    height: 44,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  value: { fontSize: 15, color: '#1C1C1E' },
+  placeholder: { fontSize: 15, color: '#AEAEB2' },
+  chevron: { fontSize: 20, color: '#AEAEB2', marginTop: -2 },
+})
 
 const editRowStyles = StyleSheet.create({
   input: {
@@ -662,46 +681,6 @@ const styles = StyleSheet.create({
   },
   modalRow: { flexDirection: 'row', gap: 12 },
   modalActions: { flexDirection: 'row', gap: 12 },
-  gymEditRow: {
-    flexDirection: 'row',
-    gap: 8,
-    alignItems: 'center',
-  },
-  gymInput: {
-    flex: 1,
-    backgroundColor: '#F2F2F7',
-    borderRadius: 10,
-    height: 42,
-    paddingHorizontal: 12,
-    fontSize: 15,
-    color: '#1C1C1E',
-  },
-  gymSaveBtn: {
-    backgroundColor: '#FF6B6B',
-    borderRadius: 10,
-    height: 42,
-    paddingHorizontal: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  gymSaveBtnText: {
-    color: '#fff',
-    fontWeight: '700',
-    fontSize: 14,
-  },
-  gymCancelBtn: {
-    backgroundColor: '#F2F2F7',
-    borderRadius: 10,
-    height: 42,
-    paddingHorizontal: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  gymCancelBtnText: {
-    color: '#1C1C1E',
-    fontWeight: '600',
-    fontSize: 14,
-  },
   gymValue: {
     fontSize: 15,
     color: '#1C1C1E',

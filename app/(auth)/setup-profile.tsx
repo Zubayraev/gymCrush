@@ -15,6 +15,7 @@ import { StatusBar } from 'expo-status-bar'
 import * as ImagePicker from 'expo-image-picker'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../hooks/useAuth'
+import GymPicker, { Gym, GYM_LIST } from '../../components/GymPicker'
 
 export default function SetupProfile() {
   const { user } = useAuth()
@@ -25,9 +26,9 @@ export default function SetupProfile() {
   const [height, setHeight] = useState('')
   const [bio, setBio] = useState('')
   const [favoriteExercise, setFavoriteExercise] = useState('')
-  const [gymName, setGymName] = useState('')
+  const [selectedGym, setSelectedGym] = useState<Gym | null>(null)
+  const [showGymPicker, setShowGymPicker] = useState(false)
   const [instagram, setInstagram] = useState('')
-  const [city, setCity] = useState('')
   const [avatarUri, setAvatarUri] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -107,9 +108,10 @@ export default function SetupProfile() {
         height_cm: height ? parseInt(height, 10) : null,
         bio: bio.trim(),
         favorite_exercise: favoriteExercise.trim(),
-        gym_name: gymName.trim(),
+        gym_name: selectedGym?.name ?? null,
+        gym_id: selectedGym?.id ?? null,
+        city: selectedGym?.city ?? null,
         instagram: instagram.trim(),
-        city: city.trim(),
         avatar_url: avatarUrl || null,
       })
 
@@ -185,24 +187,28 @@ export default function SetupProfile() {
           onChangeText={setFavoriteExercise}
           placeholder="Benkpress, knebøy..."
         />
-        <InputField
-          label="Treningssenter"
-          value={gymName}
-          onChangeText={setGymName}
-          placeholder="SATS Storo, Elixia..."
-        />
+
+        {/* Treningssenter-velger */}
+        <View style={inputStyles.group}>
+          <Text style={inputStyles.label}>Treningssenter</Text>
+          <TouchableOpacity
+            style={inputStyles.pickerBtn}
+            onPress={() => setShowGymPicker(true)}
+            activeOpacity={0.7}
+          >
+            <Text style={selectedGym ? inputStyles.pickerValue : inputStyles.pickerPlaceholder}>
+              {selectedGym ? `🏋️ ${selectedGym.name}` : 'Velg treningssenter...'}
+            </Text>
+            <Text style={inputStyles.pickerChevron}>›</Text>
+          </TouchableOpacity>
+        </View>
+
         <InputField
           label="Instagram"
           value={instagram}
           onChangeText={setInstagram}
           placeholder="@brukernavn"
           autoCapitalize="none"
-        />
-        <InputField
-          label="Bosted"
-          value={city}
-          onChangeText={setCity}
-          placeholder="Oslo, Bergen..."
         />
       </View>
 
@@ -218,6 +224,13 @@ export default function SetupProfile() {
           <Text style={styles.saveText}>Lagre og fortsett →</Text>
         )}
       </TouchableOpacity>
+
+      <GymPicker
+        visible={showGymPicker}
+        selectedId={selectedGym?.id ?? null}
+        onSelect={(gym) => setSelectedGym(gym)}
+        onClose={() => setShowGymPicker(false)}
+      />
     </ScrollView>
   )
 }
@@ -274,6 +287,28 @@ const inputStyles = StyleSheet.create({
     height: 90,
     paddingTop: 14,
     textAlignVertical: 'top',
+  },
+  pickerBtn: {
+    backgroundColor: '#F2F2F7',
+    borderRadius: 12,
+    height: 50,
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  pickerValue: {
+    fontSize: 16,
+    color: '#1C1C1E',
+  },
+  pickerPlaceholder: {
+    fontSize: 16,
+    color: '#AEAEB2',
+  },
+  pickerChevron: {
+    fontSize: 22,
+    color: '#AEAEB2',
+    marginTop: -2,
   },
 })
 
