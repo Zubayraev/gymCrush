@@ -9,10 +9,13 @@ export type Profile = {
   bio?: string | null
   favorite_exercise?: string | null
   gym_name?: string | null
+  gym_id?: string | null
   instagram?: string | null
   avatar_url?: string | null
   show_me?: boolean | null
   city?: string | null
+  checked_in_gym_id?: string | null
+  checked_in_at?: string | null
 }
 
 export function useProfile(userId: string | undefined) {

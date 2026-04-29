@@ -39,9 +39,8 @@ export async function swipeOnUser(
 
 export async function getDiscoverProfiles(
   currentUserId: string,
-  filterByGym?: string
+  checkedInGymId: string
 ): Promise<Profile[]> {
-  // Hent alle profiles vi allerede har swiped på
   const { data: swipedRows } = await supabase
     .from('swipes')
     .select('swiped_id')
@@ -49,18 +48,19 @@ export async function getDiscoverProfiles(
 
   const swipedIds = swipedRows?.map((r) => r.swiped_id) ?? []
 
+  // Vis kun profiler som er sjekket inn på samme gym akkurat nå (ikke utløpt)
+  const expiryThreshold = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString()
+
   let query = supabase
     .from('profiles')
     .select('*')
     .neq('id', currentUserId)
+    .eq('checked_in_gym_id', checkedInGymId)
+    .gte('checked_in_at', expiryThreshold)
     .limit(20)
 
   if (swipedIds.length > 0) {
     query = query.not('id', 'in', `(${swipedIds.join(',')})`)
-  }
-
-  if (filterByGym) {
-    query = query.ilike('gym_name', `%${filterByGym}%`)
   }
 
   const { data, error } = await query
