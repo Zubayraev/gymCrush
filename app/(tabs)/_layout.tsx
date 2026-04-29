@@ -37,7 +37,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="discover"
         options={{
-          title: 'Oppdage',
+          title: 'Utforsk',
           tabBarIcon: ({ focused }) => <TabIcon name="flame" focused={focused} />,
         }}
       />

@@ -113,6 +113,7 @@ export default function SetupProfile() {
         city: selectedGym?.city ?? null,
         instagram: instagram.trim(),
         avatar_url: avatarUrl || null,
+        show_me: true,
       })
 
       if (error) throw error

@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Stack, useRouter, useRootNavigationState } from 'expo-router'
+import { Stack, useRouter, useRootNavigationState, useSegments } from 'expo-router'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
 import { View, ActivityIndicator } from 'react-native'
@@ -9,24 +9,31 @@ export default function RootLayout() {
   const { profile, loading: profileLoading } = useProfile(user?.id)
   const router = useRouter()
   const rootNavState = useRootNavigationState()
+  const segments = useSegments()
 
   useEffect(() => {
     if (!rootNavState?.key) return
     if (authLoading || (user && profileLoading)) return
 
-    // Ikke innlogget → ikke gjør noe, la velkomst/auth-skjermene styre
-    if (!user) return
+    const inTabs = segments[0] === '(tabs)'
+    const inAuth = segments[0] === '(auth)'
 
-    // Innlogget, ingen profil → profil-oppsett
-    if (!profile) {
-      router.replace('/(auth)/setup-profile')
+    if (!user) {
+      // Innlogget bruker logget ut → tilbake til velkomst
+      if (inTabs) router.replace('/')
       return
     }
 
-    // Innlogget med profil → hoved-appen
-    router.replace('/(tabs)/discover')
+    if (!profile) {
+      // Innlogget, mangler profil → profiloppsett
+      if (!inAuth) router.replace('/(auth)/setup-profile')
+      return
+    }
 
-  // Kjør kun når innloggingsstatus eller profil faktisk endres
+    // Innlogget med profil → send til tabs første gang (ikke mens man allerede er i tabs)
+    if (!inTabs) {
+      router.replace('/(tabs)/discover')
+    }
   }, [rootNavState?.key, !!user, !!profile, authLoading, profileLoading])
 
   if (authLoading || (user && profileLoading)) {

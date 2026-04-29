@@ -41,6 +41,13 @@ export default function Discover() {
     ? minutesRemainingForCheckIn(checkedInAt)
     : 0
 
+  // Rydd utløpt innsjekk automatisk
+  useEffect(() => {
+    if (checkedInGymId && isCheckInExpired(checkedInAt) && user) {
+      checkOutOfGym(user.id).then(() => refetchProfile())
+    }
+  }, [checkedInGymId, checkedInAt, user])
+
   const loadProfiles = useCallback(async () => {
     if (!user || !isActiveCheckIn || !checkedInGymId) return
     try {

@@ -57,6 +57,7 @@ export async function getDiscoverProfiles(
     .neq('id', currentUserId)
     .eq('checked_in_gym_id', checkedInGymId)
     .gte('checked_in_at', expiryThreshold)
+    .neq('show_me', false)
     .limit(20)
 
   if (swipedIds.length > 0) {
